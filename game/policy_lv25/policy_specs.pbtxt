@@ -18,51 +18,45 @@ dict_value {
         values {
           key: "observation"
           value {
-            dict_value {
-              fields {
-                key: "mask"
-                value {
-                  tensor_spec_value {
-                    name: "mask"
-                    shape {
-                      dim {
-                        size: 48
-                      }
+            tuple_value {
+              values {
+                bounded_tensor_spec_value {
+                  name: "observation"
+                  shape {
+                    dim {
+                      size: 5
                     }
+                    dim {
+                      size: 5
+                    }
+                    dim {
+                      size: 2
+                    }
+                  }
+                  dtype: DT_INT32
+                  minimum {
                     dtype: DT_INT32
+                    tensor_shape {
+                    }
+                    int_val: 0
+                  }
+                  maximum {
+                    dtype: DT_INT32
+                    tensor_shape {
+                    }
+                    int_val: 5
                   }
                 }
               }
-              fields {
-                key: "state"
-                value {
-                  bounded_tensor_spec_value {
-                    name: "observation"
-                    shape {
-                      dim {
-                        size: 4
-                      }
-                      dim {
-                        size: 4
-                      }
-                      dim {
-                        size: 2
-                      }
-                    }
-                    dtype: DT_INT32
-                    minimum {
-                      dtype: DT_INT32
-                      tensor_shape {
-                      }
-                      int_val: 0
-                    }
-                    maximum {
-                      dtype: DT_INT32
-                      tensor_shape {
-                      }
-                      int_val: 4
+              values {
+                tensor_spec_value {
+                  name: "mask"
+                  shape {
+                    dim {
+                      size: 100
                     }
                   }
+                  dtype: DT_INT32
                 }
               }
             }
@@ -86,7 +80,7 @@ dict_value {
                 dtype: DT_INT32
                 tensor_shape {
                 }
-                int_val: 47
+                int_val: 99
               }
             }
           }

@@ -5,44 +5,74 @@ import numpy as np
 from tf_agents.environments import py_environment
 from tf_agents.specs import array_spec
 from tf_agents.trajectories import time_step as ts
-from game.utils import get_action_num, get_action, get_action_mapper
+from game import utils
+import time
 
 
 class GameEnv(py_environment.PyEnvironment):
     """
     python environment of the game
     """
+    time_1 = 0
+    time_2 = 0
+    time_3 = 0
+
+    def timeit(method):
+        def timed(*args, **kw):
+            start = time.time()
+            result = method(*args, **kw)
+            GameEnv.time_1 += time.time() - start
+            return result
+
+        return timed
+
+    def timeit_2(method):
+        def timed(*args, **kw):
+            start = time.time()
+            result = method(*args, **kw)
+            GameEnv.time_2 += time.time() - start
+            return result
+
+        return timed
+
+    def timeit_3(method):
+        def timed(*args, **kw):
+            start = time.time()
+            result = method(*args, **kw)
+            GameEnv.time_3 += time.time() - start
+            return result
+
+        return timed
+
     STEP = 0
     TARGET = 1
 
     # state of the game
     STATE_WIN = 0
     STATE_LOSS = 1
-    STATE_NOT_FINAL = 2
+    STATE_ONGOING = 2
 
     # reward
     REWARD_LOSS = -10
     REWARD_WIN = 100
     REWARD_ILLEGAL_ACTION = -10
-    REWARD_COMPLETE_CELL = 0.01
+    REWARD_COMPLETE_CELL = 0.02
+    REWARD_PLACED_CELL = 0.01
     REWARD_NORMAL_STEP = 0.01
 
-    def __init__(self, grid):
+    def __init__(self, size, grid=None):
         """
         initialize the python environment of the game
         :param grid: 2d list of cell json object
         """
         super(GameEnv, self).__init__()
-        self.size = len(grid)
-        self.cell_num = self.size ** 2
-        self.grid = grid
-        self._discount = 0.99
-        self._states = GameEnv.grid_to_array(grid)
-        self.solution_length = self._states[:, :, GameEnv.STEP].sum() // 2
+        self._discount = 1
+        self.size = size
+        self.action_num = utils.get_action_num(self.size)
+        self.action_mapper = utils.get_action_mapper(self.size)
 
-        self.action_num = get_action_num(self.size)
-        self.action_mapper = get_action_mapper(self.size)
-        self._update_legal_actions()
+        if grid is not None:
+            self.set_grid(grid)
 
         # action is key of the action mapper
         self._action_spec = array_spec.BoundedArraySpec(
@@ -56,7 +86,7 @@ class GameEnv(py_environment.PyEnvironment):
             minimum=0,
             maximum=self.size,
             name='observation')
-        self._observation_spec = {'state': obs_spec, 'mask': mask_spec}
+        self._observation_spec = obs_spec, mask_spec
         self._game_ended = False
 
     def action_spec(self):
@@ -65,29 +95,94 @@ class GameEnv(py_environment.PyEnvironment):
     def observation_spec(self):
         return self._observation_spec
 
-        # return self._observation_spec['state']
+    def set_grid(self, grid):
+        self.initial_state = GameEnv.grid_to_array(grid)
+        self.cell_num = self.size ** 2
+        self._states = GameEnv.copy_array(self.initial_state)
+        self._initial_complete_cell_num = np.count_nonzero(self._states[:, :, GameEnv.STEP] == 0)
+        self._initial_placed_cell_num = len([1 for i in range(self.size) for j in range(self.size)
+                                             if self._states[i, j, GameEnv.STEP] < 3 and
+                                             self._states[i, j, GameEnv.TARGET] == i])
+        self._complete_cell_num = self._initial_complete_cell_num
+        self._placed_cell_num = self._initial_placed_cell_num
+        step_sum = self._states[:, :, GameEnv.STEP].sum()
+        self.solution_length = step_sum // 2
+        if step_sum % 2 == 1:
+            raise ValueError('Wrong grid data.')
+        self._update_legal_actions()
 
     def _get_observation(self):
-        return {
-            'state': np.array(self._states, dtype=np.int32),
-            'mask': self._legal_action_mask(),
-        }
-
-    def _legal_action_mask(self):
-        """
-        boolean array that mask out illegal actions
-        """
-        mask = np.zeros((self.action_num,), dtype=np.int32)
-        for i in self._current_legal_actions:
-            mask[i] = 1
-        return mask
+        return GameEnv.copy_array(self._states), self._legal_action_mask
 
     def _update_legal_actions(self):
         """
-        update current legal actions
+        update the mask and number of current legal actions
         """
-        self._current_legal_actions = [i for i, v in self.action_mapper.items()
-                                       if GameEnv.exchangeable(self._states, v[0], v[1], v[2], v[3])]
+        # get results from buffer
+        key = utils.hash_array(self._states)
+        mask, legal_action_num = utils.get_mask_from_buffer(key)
+        if mask is not None:
+            self._legal_action_mask = mask
+            self._legal_action_num = legal_action_num
+            return
+
+        self._legal_action_mask = np.zeros((self.action_num,), dtype=np.int32)
+        self._legal_action_num = 0
+        for i, action in self.action_mapper.items():
+            row1, col1, row2, col2 = action
+            grid = GameEnv.copy_array(self._states)
+            step1, step2 = grid[row1, col1, GameEnv.STEP], grid[row2, col2, GameEnv.STEP]
+            target1, target2 = grid[row1, col1, GameEnv.TARGET], grid[row2, col2, GameEnv.TARGET]
+
+            legality, uniqueness = GameEnv.exchangeable(step1, step2, target1, target2, row1, row2)
+            # find if there is a unique action
+            if uniqueness:
+                self._legal_action_mask = np.zeros((self.action_num,), dtype=np.int32)
+                self._legal_action_mask[i] = 1
+                self._legal_action_num = 1
+                break
+
+            # swap if causing no immediate dead cells
+            if legality:
+                grid[row1, col1, GameEnv.STEP], grid[row2, col2, GameEnv.STEP] = step2 - 1, step1 - 1
+                grid[row1, col1, GameEnv.TARGET], grid[row2, col2, GameEnv.TARGET] = target2, target1
+            else:
+                continue
+
+            # swap in the same row
+            if row1 == row2 \
+                    and GameEnv.row_check(grid, row1) \
+                    and GameEnv.column_check(grid, col1) \
+                    and GameEnv.column_check(grid, col2):
+                self._legal_action_mask[i] = 1
+                self._legal_action_num += 1
+            # swap in the same column
+            elif GameEnv.row_check(grid, row1) \
+                    and GameEnv.row_check(grid, row2) \
+                    and GameEnv.column_check(grid, col1):
+                self._legal_action_mask[i] = 1
+                self._legal_action_num += 1
+
+        # add result to buffer
+        utils.add_state_mask_to_buffer(key, self._legal_action_mask, self._legal_action_num)
+
+    def _update_complete_state(self, row1, col1, row2, col2):
+        """
+        update complete cell num
+        """
+        step1, step2 = self._states[row1, col1, GameEnv.STEP], self._states[row2, col2, GameEnv.STEP]
+        target1, target2 = self._states[row1, col1, GameEnv.TARGET], self._states[row2, col2, GameEnv.TARGET]
+        if step1 == 0:
+            self._complete_cell_num += 1
+
+        if step2 == 0:
+            self._complete_cell_num += 1
+
+        if target1 == row1 and target2 != row1 and step1 < 3:
+            self._placed_cell_num += 1
+
+        if target2 == row2 and target1 != row2 and step2 < 3:
+            self._placed_cell_num += 1
 
     def _reset(self) -> ts.TimeStep:
         """
@@ -95,8 +190,10 @@ class GameEnv(py_environment.PyEnvironment):
         :return: TimeStep
         """
         self._game_ended = False
-        self._states = GameEnv.grid_to_array(self.grid)
+        self._states = GameEnv.copy_array(self.initial_state)
         self._update_legal_actions()
+        self._complete_cell_num = self._initial_complete_cell_num
+        self._placed_cell_num = self._initial_placed_cell_num
         return ts.restart(self._get_observation())
 
     def _step(self, action_index) -> ts.TimeStep:
@@ -108,22 +205,24 @@ class GameEnv(py_environment.PyEnvironment):
         if self._game_ended:
             return self.reset()
 
-        # the first and the second swapping cell
-        row, col, row2, col2 = self.action_mapper[action_index.item()]
-        first = self._states[row, col, :]
-        second = self._states[row2, col2, :]
-
-        # illegal action terminates the game
-        if first[GameEnv.STEP] == 0 or second[GameEnv.STEP] == 0 or not (row == row2 or col == col2):
+        # illegal action terminates the game, todo: remove
+        if self._legal_action_mask[action_index] == 0:
             self._game_ended = True
             return ts.termination(self._get_observation(), GameEnv.REWARD_ILLEGAL_ACTION)
 
         # update grid data after the swap
-        first[GameEnv.STEP], second[GameEnv.STEP] = second[GameEnv.STEP] - 1, first[GameEnv.STEP] - 1
-        first[GameEnv.TARGET], second[GameEnv.TARGET] = second[GameEnv.TARGET], first[GameEnv.TARGET]
+        row1, col1, row2, col2 = self.action_mapper[action_index.item()]
+        self._states[row1, col1, GameEnv.STEP], self._states[row2, col2, GameEnv.STEP] = \
+            self._states[row2, col2, GameEnv.STEP] - 1, self._states[row1, col1, GameEnv.STEP] - 1
+        self._states[row1, col1, GameEnv.TARGET], self._states[row2, col2, GameEnv.TARGET] = \
+            self._states[row2, col2, GameEnv.TARGET], self._states[row1, col1, GameEnv.TARGET]
 
+        self._update_legal_actions()
+        self._update_complete_state(row1, col1, row2, col2)
+
+        # check game state and reward
         state, reward = self._check_state()
-        if state != GameEnv.STATE_NOT_FINAL:
+        if state != GameEnv.STATE_ONGOING:
             self._game_ended = True
             return ts.termination(self._get_observation(), reward)
 
@@ -131,72 +230,84 @@ class GameEnv(py_environment.PyEnvironment):
 
     def _check_state(self):
         """
+        pre-condition: game is not dead
         check if the given states are final and calculate reward
         :return: a tuple of game state(win, loss, not final) and reward
         """
-        # update current legal action
-        self._update_legal_actions()
-
-        # record the targeted position, the game is dead if
-        # if more than 1 cell targeting to the same position
-        targeted = set()
-
-        # count the number of complete cells
-        complete_count = 0
-
-        # count the number of complete row
-        complete_row = 0
-
-        for i in range(self.size):
-            complete_cell_in_row = 0
-
-            # scan cells of each row
-            for j in range(self.size):
-                cell = self._states[i, j, :]
-                if cell[GameEnv.STEP] == 0:
-                    # unmovable cell
-                    # whether the cell is complete
-                    if i == cell[GameEnv.TARGET]:
-                        complete_cell_in_row += 1
-                    else:
-                        return GameEnv.STATE_LOSS, GameEnv.REWARD_LOSS
-                    # whether the cell is targeted by other cells
-                    if (i, j) in targeted:
-                        return GameEnv.STATE_LOSS, GameEnv.REWARD_LOSS
-                    else:
-                        targeted.add((i, j))
-                elif cell[GameEnv.STEP] == 1 and i != cell[GameEnv.TARGET]:
-                    # cell that have 1 step remained and not in the right row
-
-                    # whether target to the same cell with other cells
-                    if (cell[GameEnv.TARGET], j) in targeted:
-                        return GameEnv.STATE_LOSS, GameEnv.REWARD_LOSS
-                    else:
-                        targeted.add((cell[GameEnv.TARGET], j))
-
-            if complete_cell_in_row == self.size:
-                complete_row += 1
-            complete_count += complete_cell_in_row
-
-        if complete_row == self.size:
+        if self._complete_cell_num == self.cell_num:
             return GameEnv.STATE_WIN, GameEnv.REWARD_WIN
+        elif self._legal_action_num == 0:
+            return GameEnv.STATE_LOSS, GameEnv.REWARD_LOSS
         else:
-            # no legal action
-            if len(self._current_legal_actions) == 0:
-                return GameEnv.STATE_LOSS, GameEnv.REWARD_LOSS
-
             # game is not finished
-            reward = complete_count * GameEnv.REWARD_COMPLETE_CELL if complete_count > self.cell_num * 0.3 else 0
-            # reward = complete_row * GameEnv.REWARD_COMPLETE_CELL
-            return GameEnv.STATE_NOT_FINAL, reward
+            reward = self._complete_cell_num * GameEnv.REWARD_COMPLETE_CELL + \
+                     (self._placed_cell_num - self._complete_cell_num) * GameEnv.REWARD_PLACED_CELL \
+                if self._placed_cell_num > self.cell_num * 0.3 else 0
+            # reward = self._complete_cell_num * GameEnv.REWARD_COMPLETE_CELL \
+            #     if self._complete_cell_num > self.cell_num * 0.3 else 0
+            return GameEnv.STATE_ONGOING, reward
 
     @staticmethod
-    def exchangeable(grid, row, col, row2, col2):
-        first = grid[row, col, :]
-        second = grid[row2, col2, :]
-        return first[GameEnv.STEP] > 0 and second[GameEnv.STEP] > 0 \
-               and not (first[GameEnv.STEP] == 1 and first[GameEnv.TARGET] != row2) \
-               and not (second[GameEnv.STEP] == 1 and second[GameEnv.TARGET] != row)
+    def exchangeable(step1, step2, target1, target2, row1, row2):
+        """
+        whether 2 cells can swap without causing immediate death
+        """
+        return utils.is_legal_swap(step1, step2, target1, target2, row1, row2)
+
+    @staticmethod
+    def column_check(grid, col_index):
+        """
+        pre-condition: no immediate dead cell in the grid
+        check whether a column is alive
+        """
+        col = grid[:, col_index]
+        key = utils.hash_array(col)
+        legality = utils.column_check(key)
+        if legality is not None:
+            return legality
+
+        targeted = set()
+        # no 2 cells targeting at the same place
+        for i, cell in enumerate(col):
+            if cell[GameEnv.STEP] == 0:
+                if i in targeted:
+                    utils.add_column_legality(key, False)
+                    return False
+                targeted.add(i)
+            elif cell[GameEnv.STEP] == 1:
+                if cell[GameEnv.TARGET] in targeted:
+                    utils.add_column_legality(key, False)
+                    return False
+                targeted.add(cell[GameEnv.TARGET])
+
+        utils.add_column_legality(key, True)
+        return True
+
+    @staticmethod
+    def row_check(grid, row_index):
+        row = grid[row_index, :]
+        key = utils.hash_array(row)
+        legality = utils.row_check(key)
+        if legality is not None:
+            return legality
+
+        # whether all cells are in the correct row
+        if np.count_nonzero(row[:, GameEnv.TARGET] == row_index) != len(row):
+            utils.add_row_legality(key, True)
+            return True
+        else:
+            # count cell with 0, 1 and 2 steps remained
+            unique, counts = np.unique(row[:, GameEnv.STEP], return_counts=True)
+            counter = dict(zip(unique, counts))
+            count_0, count_1, count_2 = counter.get(0, 0), counter.get(1, 0), counter.get(2, 0)
+            incomplete_num = count_0 + count_1 + count_2
+            incomplete_steps = count_1 + count_2 * 2
+
+            # if all cells have 2 steps remained at best,
+            # row is dead if odd number of steps remained
+            legality = incomplete_num == len(row) and incomplete_steps % 2 == 0
+            utils.add_row_legality(key, legality)
+            return legality
 
     @staticmethod
     def grid_to_array(grid) -> np.ndarray:
@@ -211,4 +322,8 @@ class GameEnv(py_environment.PyEnvironment):
 
     @staticmethod
     def obs_and_mask_splitter(observation):
-        return observation['state'], observation['mask']
+        return observation
+
+    @staticmethod
+    def copy_array(array):
+        return np.array(array)

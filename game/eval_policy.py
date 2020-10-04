@@ -9,14 +9,18 @@ from game import utils
 
 
 def eval_level(level):
+    """
+    evaluate the policy of a level, print the sequence of actions and the result.
+    :param level: level of the game
+    """
     dir_path = os.path.dirname(os.path.realpath(__file__))
 
     cells = query_level(level)
     size = len(cells)
-    env = GameEnv(cells)
+    env = GameEnv(size, cells)
     tf_env = tf_py_environment.TFPyEnvironment(env)
     time_step = tf_env.reset()
-    policy = tf.saved_model.load(os.path.join(dir_path, 'policy_{0}x{0}'.format(size)))
+    policy = tf.saved_model.load(os.path.join(dir_path, 'policy_lv{0}'.format(level)))
     step_counter = 0
     while not time_step.is_last():
         action_step = policy.action(time_step)
@@ -24,12 +28,17 @@ def eval_level(level):
         time_step = tf_env.step(action_step.action)
         step_counter += 1
 
+    if step_counter == env.solution_length:
+        print("win.")
+    else:
+        print("lost.")
+
 
 def main():
-    # for i in range(11, 15):
-    #     eval_level(i)
     utils.init_action_mappers()
-    eval_level(23)
+    # for i in range(21, 24):
+    #     eval_level(i)
+    eval_level(30)
 
 
 if __name__ == "__main__":

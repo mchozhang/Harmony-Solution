@@ -2,3 +2,4 @@
 game/train
 __pycache__
 .idea
+train_*

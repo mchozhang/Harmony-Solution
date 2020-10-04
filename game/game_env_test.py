@@ -82,7 +82,7 @@ class GameEnvironmentTest(test_utils.TestCase):
         np.random.seed(0)
         game.utils.init_action_mappers()
         self.discount = np.asarray(1., dtype=np.float32)
-        self.env = GameEnv(cells)
+        self.env = GameEnv(3, cells)
         ts = self.env.reset()
 
     def test_validate_specs(self):
@@ -96,7 +96,6 @@ class GameEnvironmentTest(test_utils.TestCase):
             observation_and_action_constraint_splitter=GameEnv.obs_and_mask_splitter)
 
         driver = dynamic_step_driver.DynamicStepDriver(env, policy, num_steps=1)
-
         for i in range(10):
             time_step, _ = driver.run()
             action_step = policy.action(time_step)
