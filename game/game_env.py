@@ -13,37 +13,6 @@ class GameEnv(py_environment.PyEnvironment):
     """
     python environment of the game
     """
-    time_1 = 0
-    time_2 = 0
-    time_3 = 0
-
-    def timeit(method):
-        def timed(*args, **kw):
-            start = time.time()
-            result = method(*args, **kw)
-            GameEnv.time_1 += time.time() - start
-            return result
-
-        return timed
-
-    def timeit_2(method):
-        def timed(*args, **kw):
-            start = time.time()
-            result = method(*args, **kw)
-            GameEnv.time_2 += time.time() - start
-            return result
-
-        return timed
-
-    def timeit_3(method):
-        def timed(*args, **kw):
-            start = time.time()
-            result = method(*args, **kw)
-            GameEnv.time_3 += time.time() - start
-            return result
-
-        return timed
-
     STEP = 0
     TARGET = 1
 

@@ -182,8 +182,9 @@ def main():
     start = time.time()
     utils.init()
     if len(sys.argv) == 2:
-        level = int(sys.argv[1])
-        train_level(level, 2, True, max_iterations=1000000)
+        # level = int(sys.argv[1])
+        level = 31
+        train_level(level, 2, False, max_iterations=1000000)
     elif len(sys.argv) == 3:
         start_level = int(sys.argv[1])
         end_level = int(sys.argv[2])
