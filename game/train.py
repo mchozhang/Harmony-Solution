@@ -104,7 +104,7 @@ def train_level(level,
 
     # checkpointer of the replay buffer and policy
     train_checkpointer = common.Checkpointer(
-        ckpt_dir=os.path.join(dir_path, 'train_lv{0}'.format(level)),
+        ckpt_dir=os.path.join(dir_path, 'trained_policies/train_lv{0}'.format(level)),
         max_to_keep=1,
         agent=agent,
         policy=agent.policy,
@@ -175,15 +175,14 @@ def train_level(level,
 
     # save the policy
     train_checkpointer.save(global_step=global_step.numpy())
-    tf_policy_saver.save(os.path.join(dir_path, 'policy_lv{0}'.format(level)))
+    tf_policy_saver.save(os.path.join(dir_path, 'trained_policies/policy_lv{0}'.format(level)))
 
 
 def main():
     start = time.time()
     utils.init()
     if len(sys.argv) == 2:
-        # level = int(sys.argv[1])
-        level = 31
+        level = int(sys.argv[1])
         train_level(level, 2, False, max_iterations=1000000)
     elif len(sys.argv) == 3:
         start_level = int(sys.argv[1])

@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import numpy as np
-import json
-from ast import literal_eval
+import tensorflow as tf
+import os
+
+dir_path = os.path.dirname(os.path.realpath(__file__))
 
 # mapper of the number of possible actions of a size of grid
 action_num_mapper = {3: 18, 4: 48, 5: 100}
@@ -22,6 +24,9 @@ swap_legality_mapper = dict()
 # column row legality mapper
 row_legality_mapper = dict()
 col_legality_mapper = dict()
+
+# trained policies
+policy_mapper = dict()
 
 
 def init():
@@ -133,3 +138,17 @@ def add_row_legality(key, legality):
 def hash_array(array: np.ndarray):
     return array.tobytes()
 
+
+def load_trained_policies():
+    """
+    pre-load the trained policies
+    """
+    for i in range(1, 31):
+        try:
+            policy_mapper[i] = tf.saved_model.load(os.path.join(dir_path, 'trained_policies/policy_lv{0}'.format(i)))
+        except Exception:
+            pass
+
+
+def get_policy(level):
+    return policy_mapper.get(level)

@@ -7,14 +7,14 @@ from game.game_env import GameEnv
 from game.query_game_data import query_level
 from game import utils
 
+dir_path = os.path.dirname(os.path.realpath(__file__))
+
 
 def eval_level(level):
     """
     evaluate the policy of a level, print the sequence of actions and the result.
     :param level: level of the game
     """
-    dir_path = os.path.dirname(os.path.realpath(__file__))
-
     cells = query_level(level)
     size = len(cells)
     env = GameEnv(size, cells)
@@ -32,6 +32,17 @@ def eval_level(level):
         print("win.")
     else:
         print("lost.")
+
+
+def get_action_from_policy(level, grid):
+    size = len(grid)
+    env = GameEnv(size, grid)
+    tf_env = tf_py_environment.TFPyEnvironment(env)
+    time_step = tf_env.reset()
+    policy = utils.get_policy(level)
+    action_step = policy.action(time_step)
+    action = env.action_mapper[action_step.action.numpy()[0]]
+    return list(action)
 
 
 def main():
