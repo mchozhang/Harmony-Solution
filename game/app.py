@@ -3,12 +3,10 @@
 """
 Run the policy of a specific level
 """
-import os
-import sys
 from flask import Flask, jsonify, request
-from game.game_env import GameEnv
-from game.eval_policy import get_action_from_policy
-from game import utils
+from eval_policy import get_action_from_policy
+import utils
+import os
 
 # app init
 app = Flask(__name__, instance_relative_config=True)
@@ -33,7 +31,14 @@ def index():
     return jsonify(result)
 
 
+@app.route('/', methods=['GET'])
+def home():
+    return "harmony solution"
+
+
 if __name__ == '__main__':
     utils.init()
     utils.load_trained_policies()
-    app.run()
+    # heroku will assign a random port to the environment variable PORT
+    port = os.environ.get('PORT', 5000)
+    app.run(host='0.0.0.0', port=port)

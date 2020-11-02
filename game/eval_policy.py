@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import os
+import sys
 import tensorflow as tf
 from tf_agents.environments import tf_py_environment
-from game.game_env import GameEnv
-from game.query_game_data import query_level
-from game import utils
+from game_env import GameEnv
+from query_game_data import query_level
+import utils
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
@@ -20,7 +21,7 @@ def eval_level(level):
     env = GameEnv(size, cells)
     tf_env = tf_py_environment.TFPyEnvironment(env)
     time_step = tf_env.reset()
-    policy = tf.saved_model.load(os.path.join(dir_path, 'policy_lv{0}'.format(level)))
+    policy = tf.saved_model.load(os.path.join(dir_path, 'trained_policies/policy_lv{0}'.format(level)))
     step_counter = 0
     while not time_step.is_last():
         action_step = policy.action(time_step)
@@ -46,10 +47,9 @@ def get_action_from_policy(level, grid):
 
 
 def main():
+    level = sys.argv[1]
     utils.init_action_mappers()
-    # for i in range(21, 24):
-    #     eval_level(i)
-    eval_level(30)
+    eval_level(level)
 
 
 if __name__ == "__main__":

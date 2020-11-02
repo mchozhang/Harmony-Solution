@@ -1,11 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import sys
-import json
 import numpy as np
-from game.game_env import GameEnv
-import game.utils
+from game_env import GameEnv
+import utils
 from tf_agents.policies import random_tf_policy
 from tf_agents.drivers import dynamic_step_driver
 from tf_agents.utils import test_utils
@@ -80,7 +78,7 @@ class GameEnvironmentTest(test_utils.TestCase):
             ]
         ]
         np.random.seed(0)
-        game.utils.init_action_mappers()
+        utils.init_action_mappers()
         self.discount = np.asarray(1., dtype=np.float32)
         self.env = GameEnv(3, cells)
         ts = self.env.reset()
@@ -99,7 +97,7 @@ class GameEnvironmentTest(test_utils.TestCase):
         for i in range(10):
             time_step, _ = driver.run()
             action_step = policy.action(time_step)
-            print(game.utils.get_action(action_step.action.numpy()[0], 3))
+            print(utils.get_action(action_step.action.numpy()[0], 3))
 
 
 if __name__ == '__main__':

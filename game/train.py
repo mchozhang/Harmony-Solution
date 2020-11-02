@@ -7,9 +7,9 @@ or a range of levels to their policies respectively
 import os
 import sys
 import time
-from game.game_env import GameEnv
-from game.query_game_data import query_level
-from game import utils
+from game_env import GameEnv
+from query_game_data import query_level
+import utils
 import tensorflow as tf
 from tf_agents.environments import tf_py_environment
 from tf_agents.agents.dqn import dqn_agent
@@ -18,7 +18,6 @@ from tf_agents.networks import q_network
 from tf_agents.metrics import tf_metrics
 from tf_agents.drivers import dynamic_step_driver, dynamic_episode_driver
 from tf_agents.policies import random_tf_policy
-from tf_agents.trajectories import trajectory
 from tf_agents.policies import policy_saver
 from tf_agents.utils import common
 
