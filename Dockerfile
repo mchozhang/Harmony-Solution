@@ -1,9 +1,13 @@
-FROM tensorflow/tensorflow:2.3.0
+# Configure virtual environment
+FROM python:3.8-slim-buster
+ENV VIRTUAL_ENV=/opt/venv
+RUN python3 -m venv $VIRTUAL_ENV
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
+# Install dependencies
 COPY . /app
-
 WORKDIR /app
+RUN pip install -r requirements.txt
 
-RUN pip3 install --user -r requirements.txt
-
-CMD python3 game/app.py
+# Run the app
+CMD python game/app.py
