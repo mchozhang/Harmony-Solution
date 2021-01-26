@@ -2,5 +2,10 @@ build:
   docker:
     web: Dockerfile
 
+run:
+  web: python3 game/app.py
+
 release:
   image: web
+  command:
+    - echo 'Starting server after deployment!';

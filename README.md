@@ -47,7 +47,7 @@ Deployed at heroku container
 # push image
 heroku login
 heroku container:login
-heroku container:push web -a harmomy-solution
+heroku container:push web -a harmony-solution
 
 # deploy
 heroku container:release web -a harmony-solution
