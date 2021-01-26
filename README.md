@@ -45,9 +45,12 @@ docker build -t harmony . && docker run -p 5000:5000 harmony
 Deployed at heroku container
 ```
 # push image
+heroku login
+heroku container:login
 heroku container:push web -a harmomy-solution
+
 # deploy
-heroku container:release web - a harmony-solution
+heroku container:release web -a harmony-solution
 ```
 
 ## Sample API Data <a name="sample-api-data"></a>
