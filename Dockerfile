@@ -4,6 +4,6 @@ COPY . /app
 
 WORKDIR /app
 
-RUN pip3 install -r requirements.txt
+RUN pip3 install -r --user requirements.txt
 
 CMD python3 game/app.py
