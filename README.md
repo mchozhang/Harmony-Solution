@@ -32,7 +32,7 @@ python game eval_policy 11
 pip install -r requirements.txt
 
 # or build and run in docker
-docker build docker build -t harmony . && docker run -p 5000:5000 harmony
+docker build -t harmony . && docker run -p 5000:5000 harmony
 ```
 
 ## Implementation

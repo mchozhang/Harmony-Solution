@@ -4,15 +4,17 @@
 Run the policy of a specific level
 """
 from flask import Flask, jsonify, request
+from flask_cors import CORS, cross_origin
 from eval_policy import get_action_from_policy
 import utils
 import os
 
 # app init
 app = Flask(__name__, instance_relative_config=True)
-
+CORS(app)
 
 @app.route('/', methods=['POST'])
+@cross_origin()
 def index():
     result = {
         "status": "success",
@@ -28,6 +30,7 @@ def index():
     except Exception as e:
         result["status"] = "failure"
         result["err_msg"] = str(e)
+
     return jsonify(result)
 
 
