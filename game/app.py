@@ -42,6 +42,7 @@ def home():
 if __name__ == '__main__':
     utils.init()
     utils.load_trained_policies()
+
     # heroku will assign a random port to the environment variable PORT
     port = os.environ.get('PORT', 5000)
     app.run(host='0.0.0.0', port=port)

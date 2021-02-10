@@ -3,3 +3,4 @@ game/train
 __pycache__
 .idea
 train_*
+*.pem

@@ -1,3 +1,4 @@
+# this build spec is used only in heroku pipeline
 build:
   docker:
     web: Dockerfile
