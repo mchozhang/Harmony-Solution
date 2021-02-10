@@ -5,7 +5,7 @@ Run the policy of a specific level
 """
 from flask import Flask, jsonify, request
 from flask_cors import CORS, cross_origin
-from eval_policy import get_action_from_policy
+from game.eval_policy import get_action_from_policy
 import utils
 import os
 
