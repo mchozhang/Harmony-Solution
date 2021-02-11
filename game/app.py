@@ -12,6 +12,9 @@ import utils
 app = Flask(__name__, instance_relative_config=True)
 CORS(app)
 
+# init utils
+utils.init()
+utils.load_trained_policies()
 
 @app.route('/', methods=['POST'])
 @cross_origin()
@@ -40,10 +43,8 @@ def home():
 
 
 if __name__ == '__main__':
-    utils.init()
-    utils.load_trained_policies()
-
     # heroku will assign a random port to the environment variable PORT
     # port = os.environ.get('PORT', 5000)
     # app.run(host='0.0.0.0', port=port)
+
     app.run(port=5000)
