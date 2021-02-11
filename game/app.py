@@ -5,13 +5,13 @@ Run the policy of a specific level
 """
 from flask import Flask, jsonify, request
 from flask_cors import CORS, cross_origin
-from game.eval_policy import get_action_from_policy
+from eval_policy import get_action_from_policy
 import utils
-import os
 
 # app init
 app = Flask(__name__, instance_relative_config=True)
 CORS(app)
+
 
 @app.route('/', methods=['POST'])
 @cross_origin()
@@ -44,5 +44,6 @@ if __name__ == '__main__':
     utils.load_trained_policies()
 
     # heroku will assign a random port to the environment variable PORT
-    port = os.environ.get('PORT', 5000)
-    app.run(host='0.0.0.0', port=port)
+    # port = os.environ.get('PORT', 5000)
+    # app.run(host='0.0.0.0', port=port)
+    app.run(port=5000)

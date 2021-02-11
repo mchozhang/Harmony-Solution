@@ -4,9 +4,9 @@ import os
 import sys
 import tensorflow as tf
 from tf_agents.environments import tf_py_environment
-from game.game_env import GameEnv
-from game.query_game_data import query_level
-from game import utils
+from game_env import GameEnv
+from query_game_data import query_level
+import utils
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
