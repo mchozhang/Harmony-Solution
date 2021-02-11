@@ -4,6 +4,7 @@
 Run the policy of a specific level
 """
 from flask import Flask, jsonify, request
+from flask_script import Manager
 from flask_cors import CORS, cross_origin
 from eval_policy import get_action_from_policy
 import utils
@@ -11,10 +12,10 @@ import utils
 # app init
 app = Flask(__name__, instance_relative_config=True)
 CORS(app)
+manager = Manager(app)
 
-# init utils
-utils.init()
-utils.load_trained_policies()
+
+
 
 @app.route('/', methods=['POST'])
 @cross_origin()
@@ -42,9 +43,17 @@ def home():
     return "harmony solution"
 
 
+@manager.command
+def runserver():
+    # init utils
+    utils.init()
+    utils.load_trained_policies()
+    app.run()
+
+
 if __name__ == '__main__':
     # heroku will assign a random port to the environment variable PORT
     # port = os.environ.get('PORT', 5000)
     # app.run(host='0.0.0.0', port=port)
 
-    app.run(port=5000)
+    manager.run()
