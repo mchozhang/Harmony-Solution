@@ -6,9 +6,9 @@ using `tensorflow-agents`.
 ### Run as RESTful Web API
 ```
 # start flask app at port 5000
-python game/app.py
+python app.py
 ```
-The API can be accessed [online](http://3.105.119.231/) or locally at `localhost:5000`, post the level and grid data and receive the action,
+The API can be accessed [online](https://harmony-solution.heroluapp.com/) or locally at `localhost:5000`, post the level and grid data and receive the action,
 see the [sample request data](#sample-api-data). 
 
 ### Train a specify game level
@@ -54,11 +54,11 @@ heroku container:release web -a harmony-solution
 ```
 
 ## Sample API Data <a name="sample-api-data"></a>
-online host: [http://3.105.119.231](https://3.105.119.231/)
+online host: [https://harmony-solution.heroluapp.com/](https://harmony-solution.heroluapp.com/)
 
 using curl to test
 ```bash
-curl --location --request POST 'http://3.105.119.231/' \
+curl --location --request GET 'https://harmony-solution.herokuapp.com/action' \
 --header 'Content-Type: application/json' \
 --data-raw '{
     "level": 25,
