@@ -58,7 +58,7 @@ online host: [https://harmony-solution.heroluapp.com/](https://harmony-solution.
 
 using curl to test
 ```bash
-curl --location --request GET 'https://harmony-solution.herokuapp.com/action' \
+curl --location --request POST 'https://harmony-solution.herokuapp.com/action' \
 --header 'Content-Type: application/json' \
 --data-raw '{
     "level": 25,

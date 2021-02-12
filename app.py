@@ -13,7 +13,7 @@ app = Flask(__name__, instance_relative_config=True)
 CORS(app)
 
 
-@app.route('/action', methods=['GET'])
+@app.route('/action', methods=['POST'])
 @cross_origin()
 def get_action():
     result = {
