@@ -4,3 +4,8 @@ __pycache__
 .idea
 train_*
 *.pem
+node_modules
+.serverless
+.serverless-wsgi
+serverless_wsgi.py
+wsgi_handler.py

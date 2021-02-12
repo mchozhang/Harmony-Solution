@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import os
-import sys
 import tensorflow as tf
+from tf_agents.policies import policy_loader
 from tf_agents.environments import tf_py_environment
-from game_env import GameEnv
-from query_game_data import query_level
-import utils
+from game.game_env import GameEnv
+from game.query_game_data import query_level
+from game import utils
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
@@ -44,13 +44,3 @@ def get_action_from_policy(level, grid):
     action_step = policy.action(time_step)
     action = env.action_mapper[action_step.action.numpy()[0]]
     return list(action)
-
-
-def main():
-    level = sys.argv[1]
-    utils.init_action_mappers()
-    eval_level(level)
-
-
-if __name__ == "__main__":
-    main()

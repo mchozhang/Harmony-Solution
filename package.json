@@ -1,0 +1,24 @@
+{
+  "name": "harmony-solution",
+  "version": "1.0.0",
+  "description": "Deep Q-learning agent to solve the game puzzle [harmony](https://master.dg9tray1uvpm6.amplifyapp.com/), using `tensorflow-agents`.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mchozhang/harmony-solution.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mchozhang/harmony-solution/issues"
+  },
+  "homepage": "https://github.com/mchozhang/harmony-solution#readme",
+  "devDependencies": {
+    "serverless-python-requirements": "^5.1.0",
+    "serverless-wsgi": "^1.7.6"
+  }
+}

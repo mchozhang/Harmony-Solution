@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 import tensorflow as tf
+from tf_agents.policies import policy_loader
 import os
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
@@ -143,11 +144,16 @@ def load_trained_policies():
     """
     pre-load the trained policies
     """
+    result = True
     for i in range(1, 31):
         try:
             policy_mapper[i] = tf.saved_model.load(os.path.join(dir_path, 'trained_policies/policy_lv{0}'.format(i)))
-        except Exception:
-            pass
+        except Exception as e:
+            print(str(e))
+            result = False
+
+    if result:
+        print('Policies loaded.')
 
 
 def get_policy(level):

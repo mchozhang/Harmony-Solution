@@ -5,18 +5,17 @@ Run the policy of a specific level
 """
 from flask import Flask, jsonify, request
 from flask_cors import CORS, cross_origin
-from eval_policy import get_action_from_policy
-import utils
-import uwsgidecorators
+from game.eval_policy import get_action_from_policy
+
 
 # app init
 app = Flask(__name__, instance_relative_config=True)
 CORS(app)
 
 
-@app.route('/', methods=['POST'])
+@app.route('/action', methods=['GET'])
 @cross_origin()
-def index():
+def get_action():
     result = {
         "status": "success",
     }
@@ -31,27 +30,15 @@ def index():
     except Exception as e:
         result["status"] = "failure"
         result["err_msg"] = str(e)
+        print(str(e))
 
     return jsonify(result)
 
 
 @app.route('/', methods=['GET'])
-def home():
+def index():
     return "harmony solution"
 
 
-@uwsgidecorators.postfork
-def init_utils():
-    utils.init()
-    utils.load_trained_policies()
-    print("init utils")
-
-
 if __name__ == '__main__':
-    utils.init()
-    utils.load_trained_policies()
-
-    # heroku will assign a random port to the environment variable PORT
-    # port = os.environ.get('PORT', 5000)
-    # app.run(host='0.0.0.0', port=port)
     app.run(port=5000)

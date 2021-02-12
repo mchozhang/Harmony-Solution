@@ -7,9 +7,9 @@ or a range of levels to their policies respectively
 import os
 import sys
 import time
-from game_env import GameEnv
-from query_game_data import query_level
-import utils
+from game.game_env import GameEnv
+from game.query_game_data import query_level
+from game import utils
 import tensorflow as tf
 from tf_agents.environments import tf_py_environment
 from tf_agents.agents.dqn import dqn_agent

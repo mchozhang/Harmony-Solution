@@ -15,7 +15,7 @@ def query_level(level):
     """
 
     transport = RequestsHTTPTransport(
-        url='https://wy5oftshw4.execute-api.ap-southeast-2.amazonaws.com/dev/graphql',
+        url='https://ybpykk0p7j.execute-api.ap-southeast-2.amazonaws.com/Prod/graphql',
         use_json=True,
         headers={
             "Content-type": "application/graphql",
