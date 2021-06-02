@@ -11,19 +11,19 @@ python app.py
 The API can be accessed [online](https://harmony-solution.heroluapp.com/) or locally at `localhost:5000`, post the level and grid data and receive the action,
 see the [sample request data](#sample-api-data). 
 
-### Train a specify game level
+### Train a specified game level
 ```
 # train level 30
-python game/train.py 30
+python train.py 30
 
 # train level 1 to 10
-python game/train.py 1 10
+python train.py 1 10
 ```
 
 ### Evaluate the a policy of a level
 ```
 # print the sequence of actions of level 11
-python game eval_policy 11
+python eval_policy 11
 ```
 
 ### Development Environment
