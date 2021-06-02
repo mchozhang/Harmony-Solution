@@ -2,8 +2,10 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 import tensorflow as tf
-from tf_agents.policies import policy_loader
 import os
+
+# must include
+from tf_agents.policies import policy_loader
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 

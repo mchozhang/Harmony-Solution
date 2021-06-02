@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 import os
 import tensorflow as tf
-from tf_agents.policies import policy_loader
 from tf_agents.environments import tf_py_environment
 from game.game_env import GameEnv
 from game.query_game_data import query_level

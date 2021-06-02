@@ -5,11 +5,9 @@ Script to train a specific level to one policy
 or a range of levels to their policies respectively
 """
 import os
-import sys
 import time
 from game.game_env import GameEnv
 from game.query_game_data import query_level
-from game import utils
 import tensorflow as tf
 from tf_agents.environments import tf_py_environment
 from tf_agents.agents.dqn import dqn_agent
@@ -140,7 +138,7 @@ def train_level(level,
         num_steps=2).prefetch(3)
     iterator = iter(dataset)
 
-    # train the model until 5 consecutive evaluation have reward greater than 10
+    # train the model until 5 consecutive evaluation have reward greater than 100
     consecutive_eval_win = 0
     train_iterations = 0
     while consecutive_eval_win < consecutive_wins_flag and train_iterations < max_iterations:
@@ -175,23 +173,3 @@ def train_level(level,
     # save the policy
     train_checkpointer.save(global_step=global_step.numpy())
     tf_policy_saver.save(os.path.join(dir_path, 'trained_policies/policy_lv{0}'.format(level)))
-
-
-def main():
-    start = time.time()
-    utils.init()
-    if len(sys.argv) == 2:
-        level = int(sys.argv[1])
-        train_level(level, 2, False, max_iterations=1000000)
-    elif len(sys.argv) == 3:
-        start_level = int(sys.argv[1])
-        end_level = int(sys.argv[2])
-        for i in range(start_level, end_level + 1):
-            train_level(i, 3, collect_random_steps=True, max_iterations=num_iterations)
-    else:
-        print('Wrong arguments.')
-    print('time:', time.time() - start)
-
-
-if __name__ == '__main__':
-    main()
